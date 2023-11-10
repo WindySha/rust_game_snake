@@ -5,6 +5,7 @@ pub const HARD_MODE_FIXED_TIMESTEP: f64 = 0.3;
 
 pub const BOUNDARY_WIDTH: f32 = 17. * SNAKE_NODE_SIZE;
 pub const BOUNDARY_HEIGHT: f32 = 17. * SNAKE_NODE_SIZE;
+pub const BOUNDARY_BORDER_WIDTH: f32 = 4.;
 
 pub const WINDOW_WIDTH: f32 = 1100.;
 pub const WINDOW_HEIGHT: f32 = 800.;

@@ -3,7 +3,7 @@ use bevy::sprite::Anchor;
 use bevy::window::Window;
 use rand::Rng;
 
-use crate::constants::{BOUNDARY_HEIGHT, BOUNDARY_WIDTH, SNAKE_NODE_SIZE};
+use crate::constants::{BOUNDARY_HEIGHT, BOUNDARY_WIDTH, SNAKE_NODE_SIZE, BOUNDARY_BORDER_WIDTH};
 use crate::data::component::{Food, SnakeLength, SnakeNode};
 use crate::data::Direction;
 use crate::data::{PauseStateRes, SnakeType};
@@ -20,7 +20,6 @@ pub fn setup_boundary(mut commands: Commands, windows: Query<&mut Window>) {
     let bg_color = Color::rgba(0., 0.5, 0.25, 0.12);
     let width = BOUNDARY_WIDTH;
     let height: f32 = BOUNDARY_HEIGHT;
-    let border_width: f32 = 4.;
     let top_margin = (window_height - height) / 2.0;
     let left_margin = (window_width - width) / 2.0;
     commands.spawn(NodeBundle {
@@ -28,7 +27,7 @@ pub fn setup_boundary(mut commands: Commands, windows: Query<&mut Window>) {
         style: Style {
             width: Val::Px(width),
             height: Val::Px(height),
-            border: UiRect::all(Val::Px(border_width)),
+            border: UiRect::all(Val::Px(BOUNDARY_BORDER_WIDTH)),
             margin: UiRect {
                 left: Val::Px(left_margin),
                 top: Val::Px(top_margin),
@@ -41,7 +40,39 @@ pub fn setup_boundary(mut commands: Commands, windows: Query<&mut Window>) {
         background_color: bevy::prelude::BackgroundColor(bg_color),
         border_color: Color::WHITE.with_a(0.5).into(),
         ..Default::default()
+    }).with_children(|parent| {
+        let width_count = (BOUNDARY_WIDTH / SNAKE_NODE_SIZE) as i32;
+        let height_count = (BOUNDARY_HEIGHT / SNAKE_NODE_SIZE) as i32;
+        for x in 0..width_count {
+            for y in 0..height_count {
+                let bg_color = if (x + y) % 2  == 0 {
+                    Color::rgba(0.1, 0.24, 0.55, 0.3)
+                } else {
+                    Color::rgba(0.2, 0.14, 0.95, 0.05)
+                };
+                parent.spawn(create_grid_node(x, y, bg_color));
+            }
+        }
     });
+}
+
+fn create_grid_node(x: i32, y: i32, color: Color) -> NodeBundle {
+    return NodeBundle {
+        z_index: ZIndex::Global(-1),
+        style: Style {
+            width: Val::Px(SNAKE_NODE_SIZE),
+            height: Val::Px(SNAKE_NODE_SIZE),
+            left: Val::Px(x as f32 * SNAKE_NODE_SIZE - BOUNDARY_BORDER_WIDTH),
+            top: Val::Px(y as f32 * SNAKE_NODE_SIZE - BOUNDARY_BORDER_WIDTH),
+            // align_items: AlignItems::Center,
+            justify_content: JustifyContent::Center,
+            position_type: PositionType::Absolute,
+            ..Default::default()
+        },
+        background_color: bevy::prelude::BackgroundColor(color),
+        border_color: Color::WHITE.with_a(0.5).into(),
+        ..Default::default()
+    };
 }
 
 pub fn dismiss_snake_and_food(
@@ -95,7 +126,7 @@ pub fn setup_snake_score(
 //     move |pause_state: Res<PauseStateRes>| pause_state.0 == false
 // }
 pub fn is_not_pause_state(pause_state: Res<PauseStateRes>) -> bool {
-    pause_state.0 == false
+    !pause_state.is_pause_state()
 }
 
 pub fn setup_snake_and_food(mut commands: Commands) {
@@ -121,7 +152,7 @@ pub fn setup_snake_and_food(mut commands: Commands) {
 }
 
 pub fn create_snake_node_bundle(x: f32, y: f32) -> SpriteBundle {
-    let border_color = Color::rgba(0.7, 0.34, 0.85, 0.5);
+    let border_color = Color::rgba(0.7, 0.34, 0.85, 0.9);
     SpriteBundle {
         sprite: Sprite {
             color: border_color,
@@ -180,7 +211,7 @@ pub fn create_food_bundle(excepted_position: &Vec<(f32, f32)>) -> SpriteBundle {
 
 pub fn create_snake_node_child_bundle() -> SpriteBundle {
     let bg_color = Color::rgb(0.25, 0.25, 0.75);
-    let border_widh = 4.;
+    let border_widh = 1.;
     SpriteBundle {
         sprite: Sprite {
             color: bg_color,

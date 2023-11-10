@@ -52,7 +52,7 @@ impl Plugin for SnakePlugin {
         let background_color: Color = Color::hex("737376").unwrap();
         app.add_state::<AppState>()
             .add_state::<InGameState>()
-            .insert_resource(PauseStateRes(false))
+            .insert_resource(PauseStateRes::new(false, false))
             .insert_resource(ClearColor(background_color))
             .add_systems(Startup, setup_camera)
             .add_systems(OnEnter(AppState::InGame), (setup_boundary,))
@@ -84,9 +84,11 @@ impl Plugin for SnakePlugin {
                     change_direction_key_event,
                     game_state_key_event,
                     button_click_system,
+                    window_focus_change_system,
                 ),
             )
-            .insert_resource(Time::<Fixed>::from_seconds(NORMAL_MODE_FIXED_TIMESTEP));
+            .insert_resource(Time::<Fixed>::from_seconds(NORMAL_MODE_FIXED_TIMESTEP))
+            .add_event::<bevy::window::WindowFocused>();
 
         #[cfg(not(target_arch = "wasm32"))] {
             app.add_systems(Update, bevy::window::close_on_esc);

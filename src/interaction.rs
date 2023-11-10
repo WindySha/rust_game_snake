@@ -1,4 +1,4 @@
-use bevy::{app::AppExit, prelude::*};
+use bevy::{app::AppExit, prelude::*, window::WindowFocused};
 
 use crate::{
     constants::*,
@@ -17,7 +17,7 @@ pub fn change_direction_key_event(
     pause_state: Res<PauseStateRes>,
     cur_game_state: Res<State<InGameState>>,
 ) {
-    if pause_state.0 == true || *cur_game_state.get() != InGameState::Playing {
+    if pause_state.is_pause_state() || *cur_game_state.get() != InGameState::Playing {
         return;
     }
     let mut direction: Option<Direction> = None;
@@ -110,11 +110,7 @@ pub fn game_state_key_event(
 ) {
     if keyboard_input.just_pressed(KeyCode::Space) {
         if *cur_game_state.get() == InGameState::Playing {
-            if pause_state.0 == true {
-                pause_state.0 = false;
-            } else {
-                pause_state.0 = true;
-            }
+            pause_state.user_click_pause = !pause_state.user_click_pause;
         }
     }
 }
@@ -206,4 +202,12 @@ pub fn button_click_system(
             }
         }
     }
+}
+
+pub fn window_focus_change_system(mut events: EventReader<WindowFocused>, mut pause_state: ResMut<PauseStateRes>,
+) {
+    for event in events.read() {
+        pause_state.lose_focus_pause = !event.focused;
+    }
+
 }
